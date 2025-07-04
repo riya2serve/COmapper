@@ -14,20 +14,20 @@
 
 #User defined arguments
 #folder location to make output files, ensure free space more than 2Tb (~200Gb fq.gz file standard)
-workdir=/
+workdir=/Users/riyarampalli/hacks/COmapper
 #number of threads
-corenum=1
+corenum=4
 #name of dataset
-name=""
+name=sim_lyrata
 #location of original fq.gz file
-org=/
+org=raw
 
 #resource file location
 #location of masksam.awk file
 #change awk file for optimize nanopore base quality score
 awkloc=./resources/masksam_Q14.awk
 #location of reference genome mmi file
-ref=./resources/TAIR10.mmi
+ref=A_thaliana.mmi
 
 #------------------------------------------------------------------------------------------------------------------#
 
@@ -38,8 +38,8 @@ cd $workdir
 
 # #unzip
 copy=$workdir/$name.fq
-gzip -d $org
-cp ${org%.gz} $copy
+cp $org/$name.fq.gz $copy.gz
+gunzip $copy.gz
 echo "unzip done"
 
 # #minimap2 alignment
@@ -53,14 +53,19 @@ bam=$workdir/$name.bam
 samtools view -@ $corenum -Sb $sam > $bam
 echo "bamconvert done"
 
-# #sort, qulaity filter
+# #sort, quality filter
 sorted=$workdir/$name.sort.bam
 sbbout=$workdir/$name.sort.sbb.bam
 samtools sort $bam  -@ $corenum -o $sorted -O bam
 samtools index $sorted -@ $corenum
-sambamba view -h -t $corenum -f bam \
-		-F "not unmapped and not duplicate and mapping_quality >= 30 and sequence_length >= 1000" \
-		$sorted Chr1 Chr2 Chr3 Chr4 Chr5 > $sbbout
+# #quality filtering pipeline: MQ 30, length > 1000, retain headers
+samtools view -h -@ "$scorenum" -F 230 "$sorted" | \
+awk '$5 >= 10 && length($10) >= 200 || $1 ~ /^@/' | \
+samtools view -Sb - > "$sbbout"
+# #convert BAM to SAM
+samtools view -h "$sbbout" > "${sbbout%.bam}.sam" 
+echo "quality filter done"
+
 # retain
 # 1. not unmapped
 # 2. not duplicate
