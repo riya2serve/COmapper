@@ -1,0 +1,11 @@
+# Ignore raw and large data
+*.bam
+*.bai
+*.sam
+*.vcf
+*.fq
+*.gz
+*.mmi
+*.sorted.bam
+nanoplot/
+raw/
