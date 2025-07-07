@@ -35,7 +35,7 @@ BEGIN{FS="\t"; OFS="\t"}
     n = split($11, qual, "")
     for (i = 1; i <= n; i++) {
         # ASCII 33-47 corresponds to Q=0 to Q=14
-        if (qual[i] ~ /[!"#$%&'()*+,-./]/)
+        if (qual[i] ~ /[!"#$%&'()*+,.\/-]/)
             printf "N"
         else
             printf "%s", seq[i]
