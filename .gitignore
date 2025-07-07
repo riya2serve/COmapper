@@ -7,5 +7,6 @@
 *.gz
 *.mmi
 *.sorted.bam
+*.fna
 nanoplot/
 raw/
